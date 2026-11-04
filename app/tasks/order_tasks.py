@@ -16,8 +16,8 @@ from datetime import datetime, timedelta
 
 from sqlalchemy import delete, select
 
-from app.core.logging import get_logger
 from app.core.database import get_db_session
+from app.core.logging import get_logger
 from app.models.message import Message
 from app.models.shop import Shop
 from app.services.notification_service import notification_service

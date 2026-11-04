@@ -19,7 +19,11 @@ from app.core.exceptions import ConflictException
 from app.core.logging import get_logger
 from app.models.shop import Shop
 from app.repositories.shop_repo import shop_repo
-from app.schemas.shop import ShopProfileResponse, UpdateBusinessHoursRequest, UpdateShopProfileRequest
+from app.schemas.shop import (
+    ShopProfileResponse,
+    UpdateBusinessHoursRequest,
+    UpdateShopProfileRequest,
+)
 
 logger = get_logger(__name__)
 

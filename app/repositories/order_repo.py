@@ -7,8 +7,8 @@ from datetime import datetime
 from typing import List, Optional, Tuple
 
 from sqlalchemy import func, select
-from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.models.order import Order
 from app.repositories.base import BaseRepository

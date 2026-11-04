@@ -41,27 +41,33 @@ class OrderItem:
 class OrderParser:
     """Lightweight regex-based parser for WhatsApp order messages.
 
-    The parser tries several quantity patterns in order of specificity.
-    Duplicate item names (case-insensitive) are merged by summing quantities.
+    The message is split into segments on separators ("," "and" "&" new lines
+    and similar), and each segment is scanned once with a single pattern, so
+    overlapping matches can no longer count the same item twice. An item name
+    ends at the first stop word, so filler such as "pls" or "and" never becomes
+    part of a name. Duplicate item names (case-insensitive) are merged by
+    summing quantities.
     """
-
-    # ── Quantity patterns (tried in order) ───────────────────────────────────
-
-    _PATTERNS = [
-        # "2 plates of momos" | "1 plate of rice"
-        r"(\d+)\s+plates?\s+of\s+([a-z][a-z\s]{1,40})",
-        # "2x momos" | "3X burger"
-        r"(\d+)\s*[xX]\s+([a-z][a-z\s]{1,40})",
-        # "2 momos" | "10 samosas"
-        r"(\d+)\s+([a-z][a-z\s]{1,40})",
-        # "two momos" | "five burgers"
-        r"(one|two|three|four|five|six|seven|eight|nine|ten)\s+([a-z][a-z\s]{1,40})",
-    ]
 
     _WORD_TO_NUM = {
         "one": 1, "two": 2, "three": 3, "four": 4, "five": 5,
         "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10,
     }
+
+    # Separators between items: "2 momos, 1 tea", "2x momos and 1 tea", ...
+    _SEGMENT_SPLIT = re.compile(r"[,;\n&+]|\b(?:and|also)\b")
+
+    # quantity, optional "x" multiplier, optional unit ("plates of"), item name.
+    # "2 plates of momos" | "two plates of rice" | "2x momos" | "10 samosas"
+    _ITEM_PATTERN = re.compile(
+        r"(?<![a-z0-9])(\d+|(?:one|two|three|four|five|six|seven|eight|nine|ten)\b)"
+        r"\s*(?:x\s+)?"
+        r"(?:(?:plates?|pieces?|pcs|cups?|glasses?|bottles?|packets?)\s+(?:of\s+)?)?"
+        r"([a-z][a-z\s]*)"
+    )
+
+    _MAX_NAME_WORDS = 4
+    _MAX_NAME_LENGTH = 40
 
     # Words that are almost certainly NOT item names
     _STOP_WORDS = frozenset({
@@ -89,20 +95,17 @@ class OrderParser:
 
         seen: dict[str, OrderItem] = {}  # name_lower -> OrderItem (for dedup)
 
-        for pattern in cls._PATTERNS:
-            for match in re.finditer(pattern, text, re.IGNORECASE):
+        for segment in cls._SEGMENT_SPLIT.split(text):
+            for match in cls._ITEM_PATTERN.finditer(segment):
                 qty_str, raw_name = match.group(1), match.group(2)
 
-                # Resolve quantity
-                qty = cls._WORD_TO_NUM.get(qty_str.lower())
+                qty = cls._WORD_TO_NUM.get(qty_str)
                 if qty is None:
-                    try:
-                        qty = int(qty_str)
-                    except ValueError:
-                        continue
+                    qty = int(qty_str)
+                if qty < 1:
+                    continue
 
-                # Clean item name
-                item_name = raw_name.strip().rstrip(",.!?")
+                item_name = cls._clean_item_name(raw_name)
                 if not cls._is_valid_item_name(item_name):
                     continue
 
@@ -116,6 +119,21 @@ class OrderParser:
                     seen[name_normalised] = OrderItem(name=display_name, qty=qty)
 
         return list(seen.values())
+
+    @classmethod
+    def _clean_item_name(cls, raw_name: str) -> str:
+        """Keep the words before the first stop word, capped in length.
+
+        "samosas pls" -> "samosas", "momos with extra cheese" -> "momos".
+        """
+        words: list[str] = []
+        for word in re.findall(r"[a-z]+", raw_name):
+            if word in cls._STOP_WORDS:
+                break
+            words.append(word)
+            if len(words) == cls._MAX_NAME_WORDS:
+                break
+        return " ".join(words)[: cls._MAX_NAME_LENGTH].strip()
 
     @classmethod
     def _is_valid_item_name(cls, name: str) -> bool:

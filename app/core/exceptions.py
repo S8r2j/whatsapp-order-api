@@ -8,7 +8,7 @@ the standard API error response format.
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 
 class AppException(Exception):

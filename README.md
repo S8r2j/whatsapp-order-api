@@ -1,5 +1,7 @@
 # WhatsApp Order API
 
+[![CI](https://github.com/S8r2j/whatsapp-order-api/actions/workflows/ci.yml/badge.svg)](https://github.com/S8r2j/whatsapp-order-api/actions/workflows/ci.yml)
+
 > **FastAPI backend for a multi-tenant WhatsApp Order Management platform.**
 >
 > Shop owners connect their WhatsApp Business Account via Meta OAuth. Customers send orders over WhatsApp; those messages are automatically parsed, structured, and stored. Shop staff manage orders, update statuses, and reply to customers — all through the companion dashboard.
@@ -401,18 +403,25 @@ shops               — tenant (shop owner account)
 
 ## Running Tests
 
-Tests use an in-memory SQLite database — no live PostgreSQL or Redis required.
+The test suite needs no running PostgreSQL, Redis or Meta credentials:
+`app/tests/conftest.py` sets throwaway configuration before the app loads, and
+the database engine is created lazily, so no connection is ever opened.
+
+It covers the order parser, order-status rules, phone validation, password
+hashing, JWT handling, field-level encryption, and the HTTP layer (health
+checks, webhook verification and authentication on protected routes).
 
 ```bash
-# Run all tests
-pytest app/tests/ -v
-
-# Run with coverage
-pytest app/tests/ --cov=app --cov-report=term-missing
+# Lint and run all tests (Python 3.12)
+ruff check app
+pytest -v
 
 # Run a specific test file
-pytest app/tests/test_orders.py -v
+pytest app/tests/test_order_parser.py -v
 ```
+
+The same two commands run on every push and pull request in GitHub Actions
+(`.github/workflows/ci.yml`).
 
 ---
 

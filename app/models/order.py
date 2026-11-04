@@ -20,9 +20,9 @@ from app.core.encryption import EncryptedString
 from app.models.base import UUIDAuditBase
 
 if TYPE_CHECKING:
-    from app.models.shop import Shop
     from app.models.customer import Customer
     from app.models.message import Message
+    from app.models.shop import Shop
 
 # Valid order statuses in progression order
 ORDER_STATUSES = ("new", "confirmed", "ready", "delivered", "cancelled")

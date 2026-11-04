@@ -8,7 +8,11 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import ExternalServiceException, NotFoundException, UnauthorizedException
+from app.core.exceptions import (
+    ExternalServiceException,
+    NotFoundException,
+    UnauthorizedException,
+)
 from app.core.logging import get_logger
 from app.models.social_connection import (
     SocialConnection,

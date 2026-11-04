@@ -5,7 +5,7 @@ from __future__ import annotations
 import uuid
 from typing import Dict, Optional
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class ShopProfileResponse(BaseModel):

@@ -9,6 +9,8 @@ Provides reusable dependencies for:
 
 from __future__ import annotations
 
+import uuid
+
 import structlog
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -19,8 +21,6 @@ from app.core.exceptions import UnauthorizedException
 from app.core.security import extract_shop_id
 from app.models.shop import Shop
 from app.repositories.shop_repo import shop_repo
-
-import uuid
 
 security = HTTPBearer()
 
