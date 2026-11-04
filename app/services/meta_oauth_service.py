@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
+import uuid
 from datetime import datetime, timedelta
 from typing import Any, Dict, List
 from urllib.parse import urlencode
-import uuid
 
 import httpx
 from jose import JWTError, jwt

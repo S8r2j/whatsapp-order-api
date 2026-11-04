@@ -19,7 +19,12 @@ from app.core.database import get_async_db
 from app.core.logging import get_logger
 from app.core.security import extract_shop_id
 from app.middleware.rate_limit import limiter as _limiter
-from app.schemas.auth import LoginRequest, RefreshRequest, RegisterRequest, TokenResponse
+from app.schemas.auth import (
+    LoginRequest,
+    RefreshRequest,
+    RegisterRequest,
+    TokenResponse,
+)
 from app.services.auth_service import auth_service
 
 logger = get_logger(__name__)

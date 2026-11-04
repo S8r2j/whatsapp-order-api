@@ -13,13 +13,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import NotFoundException, ValidationException
 from app.core.logging import get_logger
-from app.repositories.customer_repo import customer_repo
+from app.models.order import Order
+from app.models.social_connection import SocialConnectionPlatform
 from app.repositories.message_repo import message_repo
 from app.repositories.order_repo import order_repo
 from app.repositories.social_connection_repo import social_connection_repo
-from app.models.order import Order
 from app.services.whatsapp_service import whatsapp_service
-from app.models.social_connection import SocialConnectionPlatform
 from app.utils.validators import is_valid_order_status, is_valid_status_transition
 
 logger = get_logger(__name__)

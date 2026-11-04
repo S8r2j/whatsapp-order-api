@@ -29,8 +29,8 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app.api.v1.api import api_router
 from app.api.pages.privacy_policy import router as pages_router
+from app.api.v1.api import api_router
 from app.core.config import settings
 from app.core.exceptions import AppException
 from app.core.logging import configure_logging, get_logger

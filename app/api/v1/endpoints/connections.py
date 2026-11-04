@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import uuid
 from typing import List
 from urllib.parse import urlencode
-import uuid
 
 from fastapi import APIRouter, Depends, Query, Response
 from fastapi.responses import RedirectResponse
@@ -13,12 +13,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import get_current_shop
 from app.core.config import settings
 from app.core.database import get_async_db
-from app.core.logging import get_logger
 from app.core.exceptions import AppException, NotFoundException
+from app.core.logging import get_logger
 from app.models.shop import Shop
+from app.models.social_connection import (
+    SocialConnectionPlatform,
+    SocialConnectionStatus,
+)
 from app.repositories import social_connection_repo
-from app.schemas.connection import ConnectMetaResponse, ManualConnectRequest, SocialConnectionResponse
-from app.models.social_connection import SocialConnectionPlatform, SocialConnectionStatus
+from app.schemas.connection import (
+    ConnectMetaResponse,
+    ManualConnectRequest,
+    SocialConnectionResponse,
+)
 from app.services.meta_oauth_service import meta_oauth_service
 from app.services.social_connection_service import social_connection_service
 

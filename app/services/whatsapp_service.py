@@ -16,7 +16,6 @@ Pre-approved template names (register these in Meta Business Manager):
 from __future__ import annotations
 
 import asyncio
-from typing import Optional
 
 import httpx
 

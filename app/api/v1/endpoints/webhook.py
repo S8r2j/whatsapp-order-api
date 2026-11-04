@@ -41,9 +41,10 @@ router = APIRouter(tags=["Webhook"])
 )
 async def webhook_debug(db: AsyncSession = Depends(get_async_db)) -> Dict[str, Any]:
     """Dev-only: shows what phone_number_ids are stored and recent messages."""
-    from sqlalchemy import select, desc
-    from app.models.social_connection import SocialConnection
+    from sqlalchemy import desc, select
+
     from app.models.message import Message
+    from app.models.social_connection import SocialConnection
 
     conns_result = await db.execute(select(SocialConnection))
     conns = conns_result.scalars().all()

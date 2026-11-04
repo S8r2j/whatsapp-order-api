@@ -18,9 +18,9 @@ from app.core.encryption import EncryptedString
 from app.models.base import UUIDAuditBase
 
 if TYPE_CHECKING:
-    from app.models.shop import Shop
-    from app.models.order import Order
     from app.models.message import Message
+    from app.models.order import Order
+    from app.models.shop import Shop
 
 
 class Customer(UUIDAuditBase):

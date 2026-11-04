@@ -11,9 +11,9 @@ import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.logging import get_logger
+from app.models.social_connection import SocialConnectionPlatform
 from app.repositories.order_repo import order_repo
 from app.repositories.social_connection_repo import social_connection_repo
-from app.models.social_connection import SocialConnectionPlatform
 from app.services.whatsapp_service import whatsapp_service
 
 logger = get_logger(__name__)

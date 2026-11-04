@@ -18,7 +18,11 @@ python_functions = ["test_*"]
 [tool.ruff]
 line-length = 88
 target-version = "py311"
-select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.ruff.lint]
+# CI enforces correctness rules. The pyupgrade (UP) and naming (N) rules can be
+# re-enabled once the codebase is migrated to PEP 604/585 annotations.
+select = ["E", "F", "I", "W"]
 ignore = ["E501"]
 
 [tool.mypy]

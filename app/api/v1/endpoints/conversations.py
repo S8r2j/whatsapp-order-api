@@ -12,11 +12,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import get_current_shop
 from app.core.database import get_async_db
 from app.models.shop import Shop
+from app.models.social_connection import SocialConnectionPlatform
 from app.repositories.customer_repo import customer_repo
 from app.repositories.message_repo import message_repo
 from app.repositories.social_connection_repo import social_connection_repo
-from app.models.social_connection import SocialConnectionPlatform
-from app.schemas.message import ConversationDetail, ConversationSummary, MessageResponse, SendReplyRequest
+from app.schemas.message import (
+    ConversationDetail,
+    ConversationSummary,
+    MessageResponse,
+    SendReplyRequest,
+)
 from app.services.whatsapp_service import whatsapp_service
 
 router = APIRouter(tags=["Conversations"])

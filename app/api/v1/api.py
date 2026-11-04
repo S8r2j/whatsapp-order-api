@@ -6,7 +6,15 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, connections, conversations, customers, orders, shops, webhook
+from app.api.v1.endpoints import (
+    auth,
+    connections,
+    conversations,
+    customers,
+    orders,
+    shops,
+    webhook,
+)
 
 api_router = APIRouter(prefix="/api/v1")
 
