@@ -6,7 +6,8 @@ build-backend = "setuptools.backends.legacy:build"
 name = "whatsapp-order-api"
 version = "0.1.0"
 description = "WhatsApp Order Management REST API"
-requires-python = ">=3.11,<3.14"
+# The pinned pydantic-core and asyncpg do not build on Python 3.13 yet.
+requires-python = ">=3.11,<3.13"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

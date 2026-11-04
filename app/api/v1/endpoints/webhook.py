@@ -5,16 +5,29 @@ Routes:
     GET  /webhook  — Meta webhook verification handshake
     POST /webhook  — Inbound message handler
 
-IMPORTANT: The POST handler ALWAYS returns HTTP 200, even on errors.
-If Meta receives any other status code, it will retry indefinitely.
+IMPORTANT: The POST handler returns HTTP 200 for every correctly signed
+request, even when processing fails, because Meta retries any other status.
+Requests without a valid X-Hub-Signature-256 are rejected with 403; genuine
+Meta deliveries are always signed, so this never triggers a retry loop.
 """
 
 from __future__ import annotations
 
+import hashlib
+import hmac
+import json
 from datetime import datetime
 from typing import Any, Dict
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request, Response
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    HTTPException,
+    Query,
+    Request,
+    Response,
+)
 from fastapi.responses import PlainTextResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -34,13 +47,35 @@ logger = get_logger(__name__)
 router = APIRouter(tags=["Webhook"])
 
 
+def _has_valid_signature(raw_body: bytes, signature_header: str | None) -> bool:
+    """Check Meta's ``X-Hub-Signature-256`` header against the raw request body.
+
+    Meta signs every webhook delivery with an HMAC-SHA256 of the body, keyed
+    with the app secret, and sends it as ``sha256=<hex digest>``. Requests
+    without a valid signature did not come from Meta.
+    """
+    if not signature_header or not signature_header.startswith("sha256="):
+        return False
+    expected = hmac.new(
+        settings.META_APP_SECRET.encode(), raw_body, hashlib.sha256
+    ).hexdigest()
+    return hmac.compare_digest(signature_header.removeprefix("sha256="), expected)
+
+
 @router.get(
     "/webhook/debug",
     summary="Debug — show stored social connections and recent messages",
     include_in_schema=False,
 )
 async def webhook_debug(db: AsyncSession = Depends(get_async_db)) -> Dict[str, Any]:
-    """Dev-only: shows what phone_number_ids are stored and recent messages."""
+    """Dev-only: shows what phone_number_ids are stored and recent messages.
+
+    Only available when DEBUG is enabled outside production; otherwise it
+    responds 404 so stored connections and messages are never exposed.
+    """
+    if settings.is_production or not settings.DEBUG:
+        raise HTTPException(status_code=404, detail="Not Found")
+
     from sqlalchemy import desc, select
 
     from app.models.message import Message
@@ -88,7 +123,13 @@ async def verify_webhook(
     hub_verify_token: str = Query(None, alias="hub.verify_token"),
     hub_challenge: str = Query(None, alias="hub.challenge"),
 ) -> Response:
-    if hub_mode == "subscribe" and hub_verify_token == settings.WEBHOOK_VERIFY_TOKEN:
+    expected_token = settings.WEBHOOK_VERIFY_TOKEN
+    if (
+        hub_mode == "subscribe"
+        and expected_token  # an unset token must never match an empty one
+        and hub_verify_token is not None
+        and hmac.compare_digest(hub_verify_token, expected_token)
+    ):
         logger.info("webhook_verified")
         return PlainTextResponse(content=hub_challenge, status_code=200)
 
@@ -109,8 +150,13 @@ async def handle_webhook(
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_async_db),
 ) -> Dict[str, str]:
+    raw_body = await request.body()
+    if not _has_valid_signature(raw_body, request.headers.get("X-Hub-Signature-256")):
+        logger.warning("webhook_signature_invalid")
+        raise HTTPException(status_code=403, detail="Invalid signature")
+
     try:
-        payload = await request.json()
+        payload = json.loads(raw_body)
         logger.info("webhook_post_received", payload_preview=str(payload)[:300])
         await _process_webhook(payload, background_tasks, db)
     except Exception as exc:
